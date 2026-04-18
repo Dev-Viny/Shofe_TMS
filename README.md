@@ -166,3 +166,8 @@ Proprietary - Shofe TMS
 ## Support
 
 For issues or questions, open an issue on GitHub.
+
+## Login Credentials
+
+ email : demo@example.com
+ password : password123
