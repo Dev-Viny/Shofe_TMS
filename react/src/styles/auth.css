@@ -1,0 +1,24 @@
+.auth-container {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+.auth-card {
+  border: none;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.auth-card .card-title {
+  color: #33333369;
+}
+
+.auth-card .card-title h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.auth-card .card-title p {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.9rem;
+}

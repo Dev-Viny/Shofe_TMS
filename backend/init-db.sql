@@ -1,0 +1,47 @@
+-- Database schema for Haulage Truck Management
+-- Run this in phpMyAdmin or MySQL client after creating the database
+
+CREATE DATABASE IF NOT EXISTS haulage_truck_management;
+USE haulage_truck_management;
+
+CREATE TABLE IF NOT EXISTS users (
+  id VARCHAR(36) PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(150) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS trucks (
+  id VARCHAR(36) PRIMARY KEY,
+  registration_number VARCHAR(50) NOT NULL UNIQUE,
+  make VARCHAR(100) NOT NULL,
+  model VARCHAR(100) NOT NULL,
+  capacity INT NOT NULL,
+  status VARCHAR(50) NOT NULL DEFAULT 'available',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS drivers (
+  id VARCHAR(36) PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(150) NOT NULL UNIQUE,
+  phone VARCHAR(50) NOT NULL,
+  license_number VARCHAR(100) NOT NULL UNIQUE,
+  status VARCHAR(50) NOT NULL DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS deliveries (
+  id VARCHAR(36) PRIMARY KEY,
+  order_number VARCHAR(100) NOT NULL UNIQUE,
+  origin VARCHAR(255) NOT NULL,
+  destination VARCHAR(255) NOT NULL,
+  truck_id VARCHAR(36) NOT NULL,
+  driver_id VARCHAR(36) NOT NULL,
+  weight INT NOT NULL,
+  status VARCHAR(50) NOT NULL DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (truck_id) REFERENCES trucks(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY (driver_id) REFERENCES drivers(id) ON DELETE RESTRICT ON UPDATE CASCADE
+);

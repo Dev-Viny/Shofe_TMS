@@ -1,0 +1,130 @@
+const { pool, query } = require('./database');
+
+// Initialize database and create tables
+const initializeDatabase = async () => {
+  try {
+    console.log('🔄 Initializing database...');
+
+    // Create database if it doesn't exist (use raw query, not prepared statement)
+    await pool.query('CREATE DATABASE IF NOT EXISTS haulage_truck_management');
+    // Note: Database is now specified in connection config, so no USE needed
+
+    // Create users table
+    await query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id VARCHAR(36) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create trucks table
+    await query(`
+      CREATE TABLE IF NOT EXISTS trucks (
+        id VARCHAR(36) PRIMARY KEY,
+        registration_number VARCHAR(50) UNIQUE NOT NULL,
+        make VARCHAR(100) NOT NULL,
+        model VARCHAR(100) NOT NULL,
+        capacity INT NOT NULL,
+        status ENUM('available', 'in_use', 'maintenance') DEFAULT 'available',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create drivers table
+    await query(`
+      CREATE TABLE IF NOT EXISTS drivers (
+        id VARCHAR(36) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        phone VARCHAR(20) NOT NULL,
+        license_number VARCHAR(50) UNIQUE NOT NULL,
+        status ENUM('active', 'inactive', 'on_leave') DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create deliveries table
+    await query(`
+      CREATE TABLE IF NOT EXISTS deliveries (
+        id VARCHAR(36) PRIMARY KEY,
+        order_number VARCHAR(50) UNIQUE NOT NULL,
+        origin VARCHAR(255) NOT NULL,
+        destination VARCHAR(255) NOT NULL,
+        truck_id VARCHAR(36),
+        driver_id VARCHAR(36),
+        weight INT NOT NULL,
+        status ENUM('pending', 'assigned', 'in_progress', 'completed', 'cancelled') DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (truck_id) REFERENCES trucks(id) ON DELETE SET NULL,
+        FOREIGN KEY (driver_id) REFERENCES drivers(id) ON DELETE SET NULL
+      )
+    `);
+
+    // Insert demo data (only if tables are empty)
+    await insertDemoData();
+
+    console.log('✅ Database initialized successfully');
+  } catch (error) {
+    console.error('❌ Database initialization failed:', error);
+    throw error;
+  }
+};
+
+// Insert demo data
+const insertDemoData = async () => {
+  try {
+    // Check if demo data already exists
+    const users = await query('SELECT COUNT(*) as count FROM users');
+    if (users[0].count === 0) {
+      // Insert demo user (password is 'password123' hashed with bcrypt)
+      await query(`
+        INSERT INTO users (id, name, email, password) VALUES
+        ('1', 'Demo User', 'demo@example.com', '$2a$10$g0Ykv4jThdZIMNknUXRr2.I4xUR3zuogv2.Bsmnrf/z72D/xDgzBu')
+      `);
+      console.log('📝 Demo user inserted');
+    }
+
+    const trucks = await query('SELECT COUNT(*) as count FROM trucks');
+    if (trucks[0].count === 0) {
+      await query(`
+        INSERT INTO trucks (id, registration_number, make, model, capacity, status) VALUES
+        ('1', 'ABC-123', 'Volvo', 'FH16', 25, 'available'),
+        ('2', 'XYZ-456', 'Scania', 'R500', 30, 'in_use')
+      `);
+      console.log('🚚 Demo trucks inserted');
+    }
+
+    const drivers = await query('SELECT COUNT(*) as count FROM drivers');
+    if (drivers[0].count === 0) {
+      await query(`
+        INSERT INTO drivers (id, name, email, phone, license_number, status) VALUES
+        ('1', 'John Smith', 'john@example.com', '+1234567890', 'DL123456', 'active'),
+        ('2', 'Sarah Johnson', 'sarah@example.com', '+1234567891', 'DL789012', 'active')
+      `);
+      console.log('👥 Demo drivers inserted');
+    }
+
+    const deliveries = await query('SELECT COUNT(*) as count FROM deliveries');
+    if (deliveries[0].count === 0) {
+      await query(`
+        INSERT INTO deliveries (id, order_number, origin, destination, truck_id, driver_id, weight, status) VALUES
+        ('1', 'ORD-001', 'Warehouse A', 'Store B', '1', '1', 15000, 'in_progress'),
+        ('2', 'ORD-002', 'Factory C', 'Distribution D', '2', '2', 20000, 'pending')
+      `);
+      console.log('📦 Demo deliveries inserted');
+    }
+  } catch (error) {
+    console.error('Error inserting demo data:', error);
+  }
+};
+
+module.exports = {
+  initializeDatabase
+};
