@@ -102,7 +102,7 @@ const Dashboard = () => {
             </Card.Header>
             <Card.Body>
               <p>
-                Hello <strong>{user?.name || 'User'}</strong>, welcome to the Haulage Truck Management System.
+                Hello <strong>{user?.name || 'User'}</strong>, welcome to the <strong>Shofe Truck Management System.</strong>
               </p>
               <p>
                 Use the navigation menu above to manage trucks, drivers, and delivery orders. Track your fleet in real-time and optimize your logistics operations.
